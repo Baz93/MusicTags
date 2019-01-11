@@ -32,14 +32,33 @@ class Collection:
         file_snapshot['tags'] = tags_snapshot
         return file_snapshot
 
-    def scan_collection(self):
+    def path_matches_snapshot(self, path, file_snapshot):
+        real_path = os.path.join(self.music_root, path)
+        return file_snapshot['modified'] == int(os.path.getmtime(real_path))
+
+    def make_snapshot_producer(self, expected_cs=None):
+        snapshot_by_path = {}
+        if expected_cs is not None:
+            for file_snapshot in expected_cs:
+                snapshot_by_path[file_snapshot['path']] = file_snapshot
+
+        def produce_snapshot(path):
+            if path in snapshot_by_path:
+                file_snapshot = snapshot_by_path[path]
+                if self.path_matches_snapshot(path, file_snapshot):
+                    return file_snapshot
+            return self.read_file(path)
+        return produce_snapshot
+
+    def scan_collection(self, expected_cs=None):
+        snapshot_producer = self.make_snapshot_producer(expected_cs)
         files = []
         self.music_search('', files)
         cs = []
         for num, file in enumerate(files):
             print("%d/%d" % (num + 1, len(files)), file)
-            config = self.read_file(file)
-            cs.append(config)
+            file_snapshot = snapshot_producer(file)
+            cs.append(file_snapshot)
         return cs
 
     def get_used_pictures(self, cs):
