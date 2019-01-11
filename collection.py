@@ -24,12 +24,13 @@ class Collection:
 
     def read_file(self, path):
         real_path = os.path.join(self.music_root, path)
-        config = OrderedDict()
-        config['path'] = path
+        file_snapshot = OrderedDict()
+        file_snapshot['path'] = path
+        file_snapshot['modified'] = int(os.path.getmtime(real_path))
         tags = ID3(real_path)
         tags_snapshot = self.snapshots.serialize_tags(tags)
-        config['tags'] = tags_snapshot
-        return config
+        file_snapshot['tags'] = tags_snapshot
+        return file_snapshot
 
     def scan_collection(self):
         files = []
@@ -43,8 +44,8 @@ class Collection:
 
     def get_used_pictures(self, cs):
         used_pictures = []
-        for tags_snapshot in cs:
-            for frame_snapshot in tags_snapshot['tags']:
+        for file_snapshot in cs:
+            for frame_snapshot in file_snapshot['tags']:
                 name, kwargs = self.snapshots.parse_frame_snapshot(frame_snapshot)
                 if name == 'APIC':
                     used_pictures.append(kwargs['path'])
