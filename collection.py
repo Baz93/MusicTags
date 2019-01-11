@@ -1,9 +1,27 @@
 import os
 from collections import OrderedDict
+import hashlib
+import tempfile
+import shutil
 
 from mutagen.id3 import ID3
 
 from snapshots import Snapshots
+
+
+def get_mp3_hash(path):
+    with tempfile.TemporaryDirectory() as td:
+        tf = os.path.join(td, 'a.mp3')
+        shutil.copy2(path, tf)
+        tags = ID3(tf)
+        tags.delete()
+        tags.save()
+        with open(tf, 'rb') as f:
+            return hashlib.md5(f.read()).hexdigest()
+
+
+def modified_timestamp(path):
+    return int(os.path.getmtime(path))
 
 
 class Collection:
@@ -26,7 +44,8 @@ class Collection:
         real_path = os.path.join(self.music_root, path)
         file_snapshot = OrderedDict()
         file_snapshot['path'] = path
-        file_snapshot['modified'] = int(os.path.getmtime(real_path))
+        file_snapshot['modified'] = modified_timestamp(real_path)
+        file_snapshot['hash'] = get_mp3_hash(real_path)
         tags = ID3(real_path)
         tags_snapshot = self.snapshots.serialize_tags(tags)
         file_snapshot['tags'] = tags_snapshot
@@ -34,7 +53,7 @@ class Collection:
 
     def path_matches_snapshot(self, path, file_snapshot):
         real_path = os.path.join(self.music_root, path)
-        return file_snapshot['modified'] == int(os.path.getmtime(real_path))
+        return file_snapshot['modified'] == modified_timestamp(real_path)
 
     def make_snapshot_producer(self, expected_cs=None):
         snapshot_by_path = {}
