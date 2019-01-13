@@ -30,7 +30,7 @@ def get_mime_by_path(path):
     return mimetypes.guess_type(path)[0]
 
 
-def get_kwargs(*args, **kwargs):
+def get_kwargs(**kwargs):
     return kwargs
 
 
