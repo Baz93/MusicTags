@@ -27,16 +27,31 @@ def modified_timestamp(path):
 
 
 class Collection:
-    def __init__(self, snapshots: Snapshots, music_root):
+    def __init__(self, snapshots: Snapshots, music_root, expected_cs=None, need_update=True):
+        if expected_cs is None:
+            expected_cs = []
+
         self.snapshots = snapshots
         self.music_root = music_root
+        self.state = None
+        self.by_path = None
+        self.set_state(expected_cs)
+        if need_update:
+            self.update()
+
+    def set_state(self, state):
+        self.state = state
+        self.by_path = dict((fs['path'], fs) for fs in state)
+
+    def real_path(self, path):
+        return os.path.join(self.music_root, path)
 
     def is_good_path(self, path):
         # TODO
         return True
 
     def delete_empty_folders(self, path):
-        real_path = os.path.join(self.music_root, path)
+        real_path = self.real_path(path)
         if os.path.isfile(real_path):
             return
         for f in os.listdir(real_path):
@@ -45,7 +60,7 @@ class Collection:
             os.rmdir(real_path)
 
     def music_search(self, path, res):
-        real_path = os.path.join(self.music_root, path)
+        real_path = self.real_path(path)
         if os.path.isfile(real_path):
             if real_path.endswith('.mp3'):
                 res.append(path)
@@ -56,67 +71,67 @@ class Collection:
             self.music_search(os.path.join(path, f), res)
 
     def read_file(self, path):
-        real_path = os.path.join(self.music_root, path)
-        file_snapshot = OrderedDict()
-        file_snapshot['path'] = path
-        file_snapshot['modified'] = modified_timestamp(real_path)
-        file_snapshot['hash'] = get_mp3_hash(real_path)
-        tags = ID3(real_path)
-        tags_snapshot = self.snapshots.serialize_tags(tags)
-        file_snapshot['tags'] = tags_snapshot
-        return file_snapshot
+        real_path = self.real_path(path)
+        fs = OrderedDict()
+        fs['path'] = path
+        fs['modified'] = modified_timestamp(real_path)
+        fs['hash'] = get_mp3_hash(real_path)
+        fs['tags'] = self.snapshots.serialize_tags(ID3(real_path))
+        return fs
 
-    def path_matches_snapshot(self, path, file_snapshot):
-        real_path = os.path.join(self.music_root, path)
-        return file_snapshot['modified'] == modified_timestamp(real_path)
+    def load_fs(self, path):
+        if path in self.by_path:
+            fs = self.by_path[path]
+            if fs['modified'] == modified_timestamp(self.real_path(path)):
+                return deepcopy(fs)
+        return self.read_file(path)
 
-    def make_snapshot_producer(self, expected_cs=None):
-        snapshot_by_path = {}
-        if expected_cs is not None:
-            for file_snapshot in expected_cs:
-                snapshot_by_path[file_snapshot['path']] = file_snapshot
-
-        def produce_snapshot(path):
-            if path in snapshot_by_path:
-                file_snapshot = snapshot_by_path[path]
-                if self.path_matches_snapshot(path, file_snapshot):
-                    return deepcopy(file_snapshot)
-            return self.read_file(path)
-        return produce_snapshot
-
-    def scan_collection(self, expected_cs=None):
-        snapshot_producer = self.make_snapshot_producer(expected_cs)
+    def update(self):
         files = []
         self.music_search('', files)
         cs = []
-        for num, file in enumerate(files):
-            print("%d/%d" % (num + 1, len(files)), file)
-            file_snapshot = snapshot_producer(file)
-            cs.append(file_snapshot)
-        return cs
+        for num, path in enumerate(files):
+            print("%d/%d" % (num + 1, len(files)), path)
+            cs.append(self.load_fs(path))
+        self.set_state(cs)
 
     def move_file(self, cur_path, new_path):
-        cur_real_path = os.path.join(self.music_root, cur_path)
-        new_real_path = os.path.join(self.music_root, new_path)
-        shutil.move(cur_real_path, new_real_path)
-
-    def apply_file_snapshot(self, path, fs):
-        cur_real_path = os.path.join(self.music_root, path)
-        new_real_path = os.path.join(self.music_root, fs['path'])
+        if new_path == cur_path:
+            return
+        cur_real_path = self.real_path(cur_path)
+        new_real_path = self.real_path(new_path)
+        assert new_path not in self.by_path
         os.makedirs(os.path.dirname(new_real_path), exist_ok=True)
-        shutil.copy2(cur_real_path, new_real_path)
-        try:
-            tags = self.snapshots.deserialize_tags(fs['tags'])
-            tags.save(new_real_path)
-            tags = ID3(new_real_path)
-            assert repr(sorted(self.snapshots.serialize_tags(tags))) == repr(sorted(fs['tags']))
-        except:
-            os.remove(new_real_path)
-            assert False
-        os.remove(cur_real_path)
+        fs = self.by_path[cur_path]
+        shutil.move(cur_real_path, new_real_path)
+        del self.by_path[cur_path]
+        fs['path'] = new_path
         fs['modified'] = modified_timestamp(new_real_path)
+        self.by_path[new_path] = fs
 
-    def apply_snapshot(self, cur_cs, new_cs):
+    def set_tags(self, path, tags):
+        temp = uuid.uuid4().hex + '.mp3'
+        real_path = self.real_path(path)
+        real_temp = self.real_path(temp)
+        shutil.copy2(real_path, real_temp)
+        try:
+            tags.save(real_temp)
+            assert (
+                repr(self.snapshots.serialize_tags(tags)) ==
+                repr(self.snapshots.serialize_tags(ID3(real_temp)))
+            )
+        except Exception as ex:
+            os.remove(real_temp)
+            raise ex
+        os.remove(real_path)
+        fs = self.by_path[path]
+        shutil.move(real_temp, real_path)
+        fs['modified'] = modified_timestamp(real_path)
+        fs['tags'] = self.snapshots.serialize_tags(tags)
+
+    def apply_snapshot(self, new_cs):
+        cur_cs = self.state
+
         assert len(set(fs['path'] for fs in new_cs)) == len(new_cs)
         for fs in new_cs:
             assert self.is_good_path(fs['path'])
@@ -148,22 +163,24 @@ class Collection:
                 self.move_file(path, temp)
                 path = temp
             rec(new_cs[i]['path'])
-            self.apply_file_snapshot(path, new_cs[i])
+
+            self.move_file(path, new_cs[i]['path'])
+            self.set_tags(path, self.snapshots.serialize_tags(new_cs[i]['tags']))
 
         for cur_fs in cur_cs:
             rec(cur_fs['path'], True)
 
         self.delete_empty_folders('')
 
-    def get_used_pictures(self, cs):
+    def get_used_pictures(self):
         used_pictures = []
-        for file_snapshot in cs:
-            for frame_snapshot in file_snapshot['tags']:
+        for fs in self.state:
+            for frame_snapshot in fs['tags']:
                 name, kwargs = self.snapshots.parse_frame_snapshot(frame_snapshot)
                 if name == 'APIC':
                     used_pictures.append(kwargs['path'])
         return used_pictures
 
-    def remove_redundant_pictures(self, cs):
-        used_picrures = self.get_used_pictures(cs)
+    def remove_unused_pictures(self):
+        used_picrures = self.get_used_pictures()
         self.snapshots.filter_pictures(lambda name: name in used_picrures)
