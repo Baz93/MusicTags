@@ -1,0 +1,31 @@
+[
+    {
+        "path": "a.mp3",
+        "modified": 1552521248,
+        "hash": "23f49229eb92b5906cd945aa2e495a86",
+        "tags": [
+            "TIT2(text=['Neither Shape Nor Shadow'])",
+            "TPE1(text=[\"Be'lakor\"])",
+            "TRCK(text=['01'])",
+            "TALB(text=['The Frail Tide'])",
+            "TDRC(text=['2007'])",
+            "TCON(text=['Atmospheric MDM'])",
+            "TPE2(text=[\"Be'lakor\"])",
+            "APIC(path='7dea362b3fac8e00956a4952a3d4f474.jpg')",
+            "TXXX(desc='GROUP', text=['Metal'])",
+            "TXXX(desc='RYMTYPE', text=['album'])",
+            "TXXX(desc='SUBGENRE', text=['MDM%'])",
+            "TXXX(desc='SERIES', text=[\"Be'lakor\"])",
+            "TXXX(desc='SUPERGENRE', text=['Metal'])",
+            "TXXX(desc='COUNTRY', text=['Australia'])",
+            "TXXX(desc='RYMARTIST', text=['belakor'])",
+            "TXXX(desc='EXTENDEDARTIST', text=[\"Be'lakor\"])",
+            "TXXX(desc='RYMALBUM', text=['the_frail_tide'])",
+            "TXXX(desc='GENRESPECIFIER', text=['Atmospheric'])",
+            "TXXX(desc='EXTENDEDALBUM', text=['The Frail Tide'])",
+            "TXXX(desc='SECONDARYGENRES', text=['Progressive MDM'])",
+            "TXXX(desc='EXTENDEDTITLE', text=['Neither Shape Nor Shadow'])",
+            "USLT(lang='eng', text=\"\\r\\nIn the space of one night's darkness\\r\\nThey have gathered, somehow drawn\\r\\nTo where sand and water meet\\r\\nTo the place where nature mourns\\r\\n\\r\\nAn army of one thousand souls\\r\\nMoved not by force of law\\r\\nBut by an end of which they dreamt\\r\\nReturns to wade once more\\r\\n\\r\\nIn the shallows, but a prelude\\r\\nTo the greatest icy depths\\r\\nWhere neither shape nor shadow\\r\\nCan persist in one who's stepped\\r\\n\\r\\nTheir unseeing eyes surveying\\r\\nDarkened scenes within their minds\\r\\nNow blissful, soon will falter\\r\\nLaying bare what now it hides\\r\\n\\r\\nOnce submerged they may awaken\\r\\nBriefly grasping moonlit skies\\r\\nBut a crescent moon accompaniment\\r\\nMerely ushers in the tide\\r\\n\\r\\nBeneath horizons megalithic\\r\\nRays of light's first wonder\\r\\nShall reveal an ashen shoreline strewn\\r\\nWith the prints of those pulled under\\r\\n\\r\\n\\r\\n\")"
+        ]
+    }
+]
