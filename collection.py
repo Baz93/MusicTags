@@ -109,16 +109,19 @@ class Collection:
         fs['modified'] = modified_timestamp(new_real_path)
         self.by_path[new_path] = fs
 
-    def set_tags(self, path, tags):
+    def set_tags(self, path, serialized_tags):
+        tags = self.snapshots.deserialize_tags(serialized_tags)
+        serialized_tags = self.snapshots.serialize_tags(tags)
         temp = uuid.uuid4().hex + '.mp3'
         real_path = self.real_path(path)
         real_temp = self.real_path(temp)
         shutil.copy2(real_path, real_temp)
         try:
             tags.save(real_temp)
+            result_tags = self.snapshots.serialize_tags(ID3(real_temp))
             assert (
-                repr(self.snapshots.serialize_tags(tags)) ==
-                repr(self.snapshots.serialize_tags(ID3(real_temp)))
+                sorted(serialized_tags) ==
+                sorted(result_tags)
             )
         except Exception as ex:
             os.remove(real_temp)
@@ -127,7 +130,7 @@ class Collection:
         fs = self.by_path[path]
         shutil.move(real_temp, real_path)
         fs['modified'] = modified_timestamp(real_path)
-        fs['tags'] = self.snapshots.serialize_tags(tags)
+        fs['tags'] = serialized_tags
 
     def apply_snapshot(self, new_cs):
         cur_cs = self.state
@@ -165,7 +168,7 @@ class Collection:
             rec(new_cs[i]['path'])
 
             self.move_file(path, new_cs[i]['path'])
-            self.set_tags(path, self.snapshots.serialize_tags(new_cs[i]['tags']))
+            self.set_tags(path, new_cs[i]['tags'])
 
         for cur_fs in cur_cs:
             rec(cur_fs['path'], True)
