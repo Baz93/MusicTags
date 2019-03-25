@@ -3,22 +3,55 @@ import os
 import shutil
 import filecmp
 import json
+import mutagen.id3
 
-from ..collection import Snapshots, Collection
+from collection import Snapshots, Collection
 
 
 test_root = os.path.dirname(os.path.abspath(__file__))
-test_data = os.path.join(test_root, 'data')
+test_data_root = os.path.join(test_root, 'data')
 work_root = os.path.join(test_root, 'work')
 
 
+def create_collection(data_path, snapshot_root, music_root):
+    with open(data_path, 'r') as f:
+        cs = json.load(f)
+    os.makedirs(music_root)
+    os.makedirs(snapshot_root)
+    for fs in cs:
+        path = os.path.join(music_root, fs['path'])
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'w') as f:
+            f.write(fs['data'])
+        mutagen.id3.ID3().save(path)
+    snapshots = Snapshots(snapshot_root)
+    collection = Collection(snapshots, music_root)
+    for fs in cs:
+        tags = fs['tags']
+        for i, tag in enumerate(tags):
+            if tag.startswith('APIC'):
+                tag = eval('mutagen.id3.' + tag)
+                tag = snapshots.serialize_frame(tag)
+                tags[i] = tag
+        collection.set_tags(fs['path'], tags)
+    snapshots.save(collection.state, 'data.json')
+
+
 class AllTests(unittest.TestCase):
-    def picture_dirs_equal(self, path1, path2):
+    def folders_equal(self, path1, path2):
         files1 = sorted(os.listdir(path1))
         files2 = sorted(os.listdir(path2))
         self.assertEqual(files1, files2)
         for f in files1:
-            self.assertTrue(filecmp.cmp(os.path.join(path1, f), os.path.join(path2, f)))
+            f1 = os.path.join(path1, f)
+            f2 = os.path.join(path2, f)
+            is_dir1 = os.path.isdir(f1)
+            is_dir2 = os.path.isdir(f2)
+            self.assertEqual(is_dir1, is_dir2)
+            if is_dir1:
+                self.folders_equal(f1, f2)
+            else:
+                self.assertTrue(filecmp.cmp(f1, f2))
 
     def snapshots_equal(self, path1, path2):
         with open(path1, 'r') as f:
@@ -30,23 +63,42 @@ class AllTests(unittest.TestCase):
             self.assertEqual(fs1['hash'], fs2['hash'])
             self.assertEqual(fs1['tags'], fs2['tags'])
 
-    def test_one_big_file(self):
-        testname = 'one_big_file'
-        musicdir = os.path.join(test_data, 'one_big_file', 'music')
-        resultdir = os.path.join(test_data, 'one_big_file', 'result')
-        workdir = os.path.join(work_root, testname)
-        if os.path.isdir(workdir):
-            shutil.rmtree(workdir)
-        os.makedirs(workdir)
+    def impl_test_create(self, data_name, test_name):
+        work_dir = os.path.join(work_root, test_name)
+        if os.path.isdir(work_dir):
+            shutil.rmtree(work_dir)
+        os.makedirs(work_dir)
+        test_data = os.path.join(test_data_root, data_name)
+        music_dir = os.path.join(work_dir, 'music')
+        result_dir = os.path.join(work_dir, 'result')
 
-        snapshots = Snapshots(workdir)
-        collection = Collection(snapshots, musicdir)
+        create_collection(os.path.join(test_data, 'image', 'data.json'), result_dir, music_dir)
+
+        self.folders_equal(music_dir, os.path.join(test_data, 'music'))
+        self.folders_equal(os.path.join(result_dir, 'pictures'), os.path.join(work_dir, 'result', 'pictures'))
+        self.snapshots_equal(os.path.join(result_dir, 'data.json'), os.path.join(work_dir, 'result', 'data.json'))
+
+    def impl_test_scan(self, data_name, test_name):
+        work_dir = os.path.join(work_root, test_name)
+        if os.path.isdir(work_dir):
+            shutil.rmtree(work_dir)
+        os.makedirs(work_dir)
+        test_data = os.path.join(test_data_root, data_name)
+        result_dir = os.path.join(work_dir, 'result')
+
+        snapshots = Snapshots(result_dir)
+        collection = Collection(snapshots, os.path.join(test_data, 'music'))
         cs = collection.state
         snapshots.save(cs, 'data.json')
 
-        self.picture_dirs_equal(os.path.join(resultdir, 'pictures'), os.path.join(workdir, 'pictures'))
-        self.snapshots_equal(os.path.join(resultdir, 'data.json'), os.path.join(workdir, 'data.json'))
+        self.folders_equal(os.path.join(result_dir, 'pictures'), os.path.join(work_dir, 'result', 'pictures'))
+        self.snapshots_equal(os.path.join(result_dir, 'data.json'), os.path.join(work_dir, 'result', 'data.json'))
 
+    def test_create_one_big_file(self):
+        self.impl_test_create('one_big_file', 'create_one_big_file')
+
+    def test_scan_one_big_file(self):
+        self.impl_test_scan('one_big_file', 'scan_one_big_file')
 
 
 if __name__ == '__main__':
