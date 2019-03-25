@@ -1,0 +1,43 @@
+[
+    {
+        "path": "a/b/c/f2.mp3",
+        "modified": 1553483061,
+        "hash": "357d807a10fc3f6fad1f320d4efbe3c7",
+        "tags": [
+            "APIC(path='1d665b9b1467944c128a5575119d1cfd.jpg')"
+        ]
+    },
+    {
+        "path": "a/d/f3.mp3",
+        "modified": 1553483061,
+        "hash": "f4985f3aecddbe118ee310418eab2fc5",
+        "tags": [
+            "APIC(path='ec6ef230f1828039ee794566b9c58adc.jpg')"
+        ]
+    },
+    {
+        "path": "f1.mp3",
+        "modified": 1553483060,
+        "hash": "357d807a10fc3f6fad1f320d4efbe3c7",
+        "tags": [
+            "TIT2(text=['t1'])",
+            "APIC(path='ec6ef230f1828039ee794566b9c58adc.jpg')"
+        ]
+    },
+    {
+        "path": "f2.mp3",
+        "modified": 1553483061,
+        "hash": "357d807a10fc3f6fad1f320d4efbe3c7",
+        "tags": [
+            "APIC(path='ec6ef230f1828039ee794566b9c58adc.jpg')"
+        ]
+    },
+    {
+        "path": "f3.mp3",
+        "modified": 1553483061,
+        "hash": "f4985f3aecddbe118ee310418eab2fc5",
+        "tags": [
+            "APIC(path='1d665b9b1467944c128a5575119d1cfd.jpg')"
+        ]
+    }
+]

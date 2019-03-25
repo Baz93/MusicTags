@@ -100,6 +100,12 @@ class AllTests(unittest.TestCase):
     def test_scan_one_big_file(self):
         self.impl_test_scan('one_big_file', 'scan_one_big_file')
 
+    def test_create_multiple_files(self):
+        self.impl_test_create('multiple_files', 'create_multiple_files')
+
+    def test_scan_multiple_files(self):
+        self.impl_test_scan('multiple_files', 'scan_multiple_files')
+
 
 if __name__ == '__main__':
     unittest.main()
