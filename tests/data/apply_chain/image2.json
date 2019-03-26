@@ -1,0 +1,44 @@
+[
+    {
+        "path": "f2.mp3",
+        "data": "m1",
+        "tags": [
+            "TIT2(text=['t1'])"
+        ]
+    },
+    {
+        "path": "f3.mp3",
+        "data": "m2",
+        "tags": [
+            "TIT2(text=['t2'])"
+        ]
+    },
+    {
+        "path": "f4.mp3",
+        "data": "m3",
+        "tags": [
+            "TIT2(text=['t3'])"
+        ]
+    },
+    {
+        "path": "f5.mp3",
+        "data": "m4",
+        "tags": [
+            "TIT2(text=['t4'])"
+        ]
+    },
+    {
+        "path": "f6.mp3",
+        "data": "m5",
+        "tags": [
+            "TIT2(text=['t5'])"
+        ]
+    },
+    {
+        "path": "f7.mp3",
+        "data": "m6",
+        "tags": [
+            "TIT2(text=['t6'])"
+        ]
+    }
+]

@@ -145,6 +145,12 @@ class AllTests(unittest.TestCase):
     def test_apply_no_collisions(self):
         self.impl_test_apply('apply_no_collisions', 'apply_no_collisions')
 
+    def test_apply_chain(self):
+        self.impl_test_apply('apply_chain', 'apply_chain')
+
+    def test_apply_cycle(self):
+        self.impl_test_apply('apply_cycle', 'apply_cycle')
+
 
 if __name__ == '__main__':
     unittest.main()
