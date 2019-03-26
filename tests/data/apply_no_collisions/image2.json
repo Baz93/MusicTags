@@ -1,0 +1,38 @@
+[
+    {
+        "path": "f4.mp3",
+        "data": "m2",
+        "tags": [
+            "APIC(mime='image/jpeg', data=b'p2')"
+        ]
+    },
+    {
+        "path": "a/f4.mp3",
+        "data": "m1",
+        "tags": [
+            "APIC(mime='image/jpeg', data=b'p2')"
+        ]
+    },
+    {
+        "path": "e/f/g/f4.mp3",
+        "data": "m1",
+        "tags": [
+            "TIT2(text=['t2'])",
+            "APIC(mime='image/jpeg', data=b'p3')"
+        ]
+    },
+    {
+        "path": "a/d/f4.mp3",
+        "data": "m2",
+        "tags": [
+            "APIC(mime='image/jpeg', data=b'p3')"
+        ]
+    },
+    {
+        "path": "a/h/f4.mp3",
+        "data": "m1",
+        "tags": [
+            "APIC(mime='image/jpeg', data=b'p2')"
+        ]
+    }
+]

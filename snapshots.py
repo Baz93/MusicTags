@@ -136,7 +136,7 @@ class Snapshots:
     def save(self, snapshot, name):
         path = os.path.join(self.snapshot_root, name)
         with open(path, 'w') as f:
-            json.dump(snapshot, f, indent=4, ensure_ascii=False)
+            json.dump(sorted(snapshot, key=lambda fs: fs['path']), f, indent=4, ensure_ascii=False)
 
     def load(self, name):
         path = os.path.join(self.snapshot_root, name)

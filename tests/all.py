@@ -142,6 +142,9 @@ class AllTests(unittest.TestCase):
     def test_apply_one_file(self):
         self.impl_test_apply('apply_one_file', 'apply_one_file')
 
+    def test_apply_no_collisions(self):
+        self.impl_test_apply('apply_no_collisions', 'apply_no_collisions')
+
 
 if __name__ == '__main__':
     unittest.main()
