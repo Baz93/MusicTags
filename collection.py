@@ -165,10 +165,11 @@ class Collection:
                 temp = uuid.uuid4().hex + '.mp3'
                 self.move_file(path, temp)
                 path = temp
-            rec(new_cs[i]['path'])
+            to = new_cs[i]['path']
+            rec(to)
 
-            self.move_file(path, new_cs[i]['path'])
-            self.set_tags(path, new_cs[i]['tags'])
+            self.move_file(path, to)
+            self.set_tags(to, new_cs[i]['tags'])
 
         for cur_fs in cur_cs:
             rec(cur_fs['path'], True)

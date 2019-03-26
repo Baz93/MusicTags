@@ -13,7 +13,7 @@ test_data_root = os.path.join(test_root, 'data')
 work_root = os.path.join(test_root, 'work')
 
 
-def create_collection(data_path, snapshot_root, music_root):
+def create_collection(data_path, snapshot_root, music_root, name):
     with open(data_path, 'r') as f:
         cs = json.load(f)
     os.makedirs(music_root)
@@ -69,10 +69,11 @@ class AllTests(unittest.TestCase):
             shutil.rmtree(work_dir)
         os.makedirs(work_dir)
         test_data = os.path.join(test_data_root, data_name)
+
         music_dir = os.path.join(work_dir, 'music')
         result_dir = os.path.join(work_dir, 'result')
 
-        create_collection(os.path.join(test_data, 'image', 'data.json'), result_dir, music_dir)
+        create_collection(os.path.join(test_data, 'image.json'), result_dir, music_dir, 'data.json')
 
         self.folders_equal(music_dir, os.path.join(test_data, 'music'))
         self.folders_equal(os.path.join(result_dir, 'pictures'), os.path.join(work_dir, 'result', 'pictures'))
@@ -84,6 +85,7 @@ class AllTests(unittest.TestCase):
             shutil.rmtree(work_dir)
         os.makedirs(work_dir)
         test_data = os.path.join(test_data_root, data_name)
+
         result_dir = os.path.join(work_dir, 'result')
 
         snapshots = Snapshots(result_dir)
@@ -93,6 +95,32 @@ class AllTests(unittest.TestCase):
 
         self.folders_equal(os.path.join(result_dir, 'pictures'), os.path.join(work_dir, 'result', 'pictures'))
         self.snapshots_equal(os.path.join(result_dir, 'data.json'), os.path.join(work_dir, 'result', 'data.json'))
+
+    def impl_test_apply(self, data_name, test_name):
+        work_dir = os.path.join(work_root, test_name)
+        if os.path.isdir(work_dir):
+            shutil.rmtree(work_dir)
+        os.makedirs(work_dir)
+        test_data = os.path.join(test_data_root, data_name)
+
+        music1_dir = os.path.join(work_dir, 'music1')
+        result1_dir = os.path.join(work_dir, 'result1')
+        music2_dir = os.path.join(work_dir, 'music2')
+        result2_dir = os.path.join(work_dir, 'result2')
+
+        create_collection(os.path.join(test_data, 'image1.json'), result1_dir, music1_dir, 'data.json')
+        create_collection(os.path.join(test_data, 'image2.json'), result2_dir, music2_dir, 'data.json')
+
+        snapshots1 = Snapshots(result1_dir)
+        collection1 = Collection(snapshots1, music1_dir)
+        snapshots2 = Snapshots(result2_dir)
+
+        collection1.apply_snapshot(snapshots2.load('data.json'))
+        snapshots1.save(collection1.state, 'data.json')
+
+        self.folders_equal(music1_dir, music2_dir)
+        self.folders_equal(os.path.join(result1_dir, 'pictures'), os.path.join(result2_dir, 'pictures'))
+        self.snapshots_equal(os.path.join(result1_dir, 'data.json'), os.path.join(result2_dir, 'data.json'))
 
     def test_create_one_big_file(self):
         self.impl_test_create('one_big_file', 'create_one_big_file')
@@ -105,6 +133,9 @@ class AllTests(unittest.TestCase):
 
     def test_scan_multiple_files(self):
         self.impl_test_scan('multiple_files', 'scan_multiple_files')
+
+    def test_apply_identical(self):
+        self.impl_test_apply('apply_identical', 'apply_identical')
 
 
 if __name__ == '__main__':
