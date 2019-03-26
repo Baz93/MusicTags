@@ -16,8 +16,8 @@ work_root = os.path.join(test_root, 'work')
 def create_collection(data_path, snapshot_root, music_root, name):
     with open(data_path, 'r') as f:
         cs = json.load(f)
-    os.makedirs(music_root)
-    os.makedirs(snapshot_root)
+    os.makedirs(music_root, exist_ok=True)
+    os.makedirs(snapshot_root, exist_ok=True)
     for fs in cs:
         path = os.path.join(music_root, fs['path'])
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -34,7 +34,7 @@ def create_collection(data_path, snapshot_root, music_root, name):
                 tag = snapshots.serialize_frame(tag)
                 tags[i] = tag
         collection.set_tags(fs['path'], tags)
-    snapshots.save(collection.state, 'data.json')
+    snapshots.save(collection.state, name)
 
 
 class AllTests(unittest.TestCase):
@@ -114,8 +114,10 @@ class AllTests(unittest.TestCase):
         snapshots1 = Snapshots(result1_dir)
         collection1 = Collection(snapshots1, music1_dir)
         snapshots2 = Snapshots(result2_dir)
+        Collection(snapshots1, music2_dir)
 
         collection1.apply_snapshot(snapshots2.load('data.json'))
+        collection1.remove_unused_pictures()
         snapshots1.save(collection1.state, 'data.json')
 
         self.folders_equal(music1_dir, music2_dir)
@@ -136,6 +138,9 @@ class AllTests(unittest.TestCase):
 
     def test_apply_identical(self):
         self.impl_test_apply('apply_identical', 'apply_identical')
+
+    def test_apply_one_file(self):
+        self.impl_test_apply('apply_one_file', 'apply_one_file')
 
 
 if __name__ == '__main__':

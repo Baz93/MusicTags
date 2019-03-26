@@ -1,0 +1,10 @@
+[
+    {
+        "path": "f2.mp3",
+        "data": "m1",
+        "tags": [
+            "TIT2(text=['t2'])",
+            "APIC(mime='image/jpeg', data=b'p2')"
+        ]
+    }
+]
