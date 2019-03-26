@@ -1,8 +1,5 @@
+from config import snapshot_root, music_root
 from collection import Snapshots, Collection
-
-
-music_root = '/mnt/c/Users/Vasiliy Mokin/Music/'
-snapshot_root = '/mnt/c/Programming/MusicTagsSnapshot'
 
 
 if __name__ == '__main__':
