@@ -109,14 +109,17 @@ class Snapshots:
         return mutagen.id3.APIC(*args, **kwargs)
 
     def deserialize_frame(self, frame_snapshot):
-        if frame_snapshot.startswith('APIC'):
-            return eval('self.' + frame_snapshot)
-        return eval('mutagen.id3.' + frame_snapshot)
+        prefix = 'self.' if frame_snapshot.startswith('APIC') else 'mutagen.id3.'
+        return eval(prefix + frame_snapshot)
 
     def parse_frame_snapshot(self, frame_snapshot):
         name = frame_snapshot[:4]
         kwargs = eval('get_kwargs' + frame_snapshot[4:])
         return name, kwargs
+
+    def frame_by_args(self, name, kwargs):
+        prefix = 'self.' if name == 'APIC' else 'mutagen.id3.'
+        return eval(prefix + name)(**kwargs)
 
     @serialize_check
     def serialize_tags(self, tags):
