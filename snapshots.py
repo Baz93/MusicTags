@@ -39,7 +39,7 @@ def serialize_check(serialize):
     def with_check(self, obj):
         result = serialize(self, obj)
         deserialize = getattr(self, 'de' + serialize.__name__)
-        assert repr(deserialize(result)) == repr(obj)
+        assert self.equal(deserialize(result), obj)
         return result
     return with_check
 
@@ -49,6 +49,11 @@ class Snapshots:
         self.snapshot_root = snapshot_root
         self.picture_dir = os.path.join(snapshot_root, 'pictures/')
         os.makedirs(self.picture_dir, exist_ok=True)
+
+    def equal(self, lhs, rhs):
+        if isinstance(lhs, ID3) and isinstance(rhs, ID3):
+            return sorted(map(repr, lhs.items())) == sorted(map(repr, rhs.items()))
+        return repr(lhs) == repr(rhs)
 
     def serialize_picture(self, data, mime):
         name = hashlib.md5(data).hexdigest()
@@ -153,7 +158,7 @@ class Snapshots:
             frame = tags[key]
             frame_snapshot = self.serialize_frame(frame)
             result.append(frame_snapshot)
-        return result
+        return sorted(result)
 
     def deserialize_tags(self, tags_snapshot):
         result = ID3()

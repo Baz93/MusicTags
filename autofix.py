@@ -13,15 +13,14 @@ class FieldProto:
 
 class MyConfig:
     def __init__(self):
-        self.order = []
         self.fields = {}
 
-    def text_field(self, name, desc=None) -> Union[str, FieldProto]:
-        self.order.append((name, desc))
+    @staticmethod
+    def text_field(name, desc=None) -> Union[str, FieldProto]:
         return FieldProto(name, desc)
 
-    def multi_field(self, name, desc=None) -> Union[List[str], FieldProto]:
-        self.order.append((name, desc))
+    @staticmethod
+    def multi_field(name, desc=None) -> Union[List[str], FieldProto]:
         return FieldProto(name, desc, multifield=True)
 
     def initialize(self, obj):
@@ -32,7 +31,6 @@ class MyConfig:
                 self.fields[(proto.name, proto.desc)] = (attr, proto)
 
     def read(self, obj, tags):
-        order = []
         for tag in tags:
             name, kwargs = obj.snapshots.parse_frame_snapshot(tag)
 
@@ -46,8 +44,6 @@ class MyConfig:
                 continue
             attr, proto = self.fields[(name, desc)]
 
-            order.append((name, desc))
-
             if name == 'APIC':
                 value = kwargs['path']
             elif name == 'USLT':
@@ -59,12 +55,9 @@ class MyConfig:
 
             setattr(obj, attr, value)
 
-        self.order = order
-
     def write(self, obj):
         tags = []
-        for name, desc in self.order:
-            attr, proto = self.fields[(name, desc)]
+        for (name, desc), (attr, proto) in self.fields.items():
             value = getattr(obj, attr)
 
             if not value:
@@ -86,6 +79,7 @@ class MyConfig:
             tag = snapshots.build_frame_snapshot(name, kwargs)
             tags.append(tag)
 
+        tags = sorted(tags)
         return tags
 
 
