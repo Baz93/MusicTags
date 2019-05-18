@@ -84,83 +84,84 @@ class MyConfig:
 
 
 class MyTags:
-    config = MyConfig()
+    def __init__(self, snapshots, fs):
+        self.config = MyConfig()
 
-    title = config.text_field('TIT2')
-    title_exception = config.text_field('TXXX', 'TITLEEXCEPTION')
-    title_translation = config.text_field('TXXX', 'TITLETRANSLATION')
-    title_appendix = config.text_field('TXXX', 'TITLEAPPENDIX')
-    extended_title = config.text_field('TXXX', 'EXTENDEDTITLE')
+        self.title = self.config.text_field('TIT2')
+        self.title_exception = self.config.text_field('TXXX', 'TITLEEXCEPTION')
+        self.title_translation = self.config.text_field('TXXX', 'TITLETRANSLATION')
+        self.title_appendix = self.config.text_field('TXXX', 'TITLEAPPENDIX')
+        self.extended_title = self.config.text_field('TXXX', 'EXTENDEDTITLE')
 
-    artist = config.multi_field('TPE1')
-    artist_exception = config.multi_field('TXXX', 'ARTISTEXCEPTION')
-    artist_translation = config.multi_field('TXXX', 'ARTISTTRANSLATION')
-    artist_appendix = config.multi_field('TXXX', 'ARTISTAPPENDIX')
-    extended_artist = config.multi_field('TXXX', 'EXTENDEDARTIST')
-    
-    track = config.text_field('TRCK')
-    track_digits = config.text_field('TXXX', 'TRACKDIGITS')
-    
-    album = config.text_field('TALB')
-    album_exception = config.text_field('TXXX', 'ALBUMEXCEPTION')
-    album_translation = config.text_field('TXXX', 'ALBUMTRANSLATION')
-    album_appendix = config.text_field('TXXX', 'ALBUMAPPENDIX')
-    extended_album = config.text_field('TXXX', 'EXTENDEDALBUM')
-    
-    year = config.text_field('TDRC')
-    year_order = config.text_field('TXXX', 'YEARORDER')
-    year_order_digits = config.text_field('TXXX', 'YEARORDERDIGITS')
-    
-    albumartist = config.multi_field('TPE2')
-    albumartist_exception = config.multi_field('TXXX', 'ALBUMARTISTEXCEPTION')
-    series = config.text_field('TXXX', 'SERIES')
-    series_exception = config.text_field('TXXX', 'SERIESEXCEPTION')
-    country = config.text_field('TXXX', 'COUNTRY')
-    group = config.text_field('TXXX', 'GROUP')
-    
-    genre = config.text_field('TCON')
-    supergenre = config.text_field('TXXX', 'SUPERGENRE')
-    subgenre = config.text_field('TXXX', 'SUBGENRE')
-    genre_specifier = config.text_field('TXXX', 'GENRESPECIFIER')
-    secondary_genres = config.multi_field('TXXX', 'SECONDARYGENRES')
-    
-    composer = config.multi_field('TCOM')
-    performer = config.multi_field('TXXX', 'PERFORMER')
-    
-    rym_artist = config.text_field('TXXX', 'RYMARTIST')
-    rym_artist_exception = config.text_field('TXXX', 'RYMARTISTEXCEPTION')
-    rym_album = config.text_field('TXXX', 'RYMALBUM')
-    rym_album_exception = config.text_field('TXXX', 'RYMALBUMEXCEPTION')
-    rym_type = config.text_field('TXXX', 'RYMTYPE')
-    rym_type_exception = config.text_field('TXXX', 'RYMTYPEEXCEPTION')
+        self.artist = self.config.multi_field('TPE1')
+        self.artist_exception = self.config.multi_field('TXXX', 'ARTISTEXCEPTION')
+        self.artist_translation = self.config.multi_field('TXXX', 'ARTISTTRANSLATION')
+        self.artist_appendix = self.config.multi_field('TXXX', 'ARTISTAPPENDIX')
+        self.extended_artist = self.config.multi_field('TXXX', 'EXTENDEDARTIST')
 
-    picture = config.text_field('APIC')
-    lyrics = config.text_field('USLT')
+        self.track = self.config.text_field('TRCK')
+        self.track_digits = self.config.text_field('TXXX', 'TRACKDIGITS')
 
-    def __init__(self, snapshots):
+        self.album = self.config.text_field('TALB')
+        self.album_exception = self.config.text_field('TXXX', 'ALBUMEXCEPTION')
+        self.album_translation = self.config.text_field('TXXX', 'ALBUMTRANSLATION')
+        self.album_appendix = self.config.text_field('TXXX', 'ALBUMAPPENDIX')
+        self.extended_album = self.config.text_field('TXXX', 'EXTENDEDALBUM')
+
+        self.year = self.config.text_field('TDRC')
+        self.year_order = self.config.text_field('TXXX', 'YEARORDER')
+        self.year_order_digits = self.config.text_field('TXXX', 'YEARORDERDIGITS')
+
+        self.albumartist = self.config.multi_field('TPE2')
+        self.albumartist_exception = self.config.multi_field('TXXX', 'ALBUMARTISTEXCEPTION')
+        self.series = self.config.text_field('TXXX', 'SERIES')
+        self.series_exception = self.config.text_field('TXXX', 'SERIESEXCEPTION')
+        self.country = self.config.text_field('TXXX', 'COUNTRY')
+        self.group = self.config.text_field('TXXX', 'GROUP')
+
+        self.genre = self.config.text_field('TCON')
+        self.supergenre = self.config.text_field('TXXX', 'SUPERGENRE')
+        self.subgenre = self.config.text_field('TXXX', 'SUBGENRE')
+        self.genre_specifier = self.config.text_field('TXXX', 'GENRESPECIFIER')
+        self.secondary_genres = self.config.multi_field('TXXX', 'SECONDARYGENRES')
+
+        self.composer = self.config.multi_field('TCOM')
+        self.performer = self.config.multi_field('TXXX', 'PERFORMER')
+
+        self.rym_artist = self.config.text_field('TXXX', 'RYMARTIST')
+        self.rym_artist_exception = self.config.text_field('TXXX', 'RYMARTISTEXCEPTION')
+        self.rym_album = self.config.text_field('TXXX', 'RYMALBUM')
+        self.rym_album_exception = self.config.text_field('TXXX', 'RYMALBUMEXCEPTION')
+        self.rym_type = self.config.text_field('TXXX', 'RYMTYPE')
+        self.rym_type_exception = self.config.text_field('TXXX', 'RYMTYPEEXCEPTION')
+
+        self.picture = self.config.text_field('APIC')
+        self.lyrics = self.config.text_field('USLT')
+
+        self.path = fs['path']
+        
         self.config.initialize(self)
         self.snapshots = snapshots
 
-    def read(self, tags):
-        self.config.read(self, tags)
+        self.config.read(self, fs['tags'])
 
     def fix(self):
         pass
 
-    def write(self):
-        return self.config.write(self)
+    def write(self, fs):
+        tags = self.config.write(self)
+        if fs['path'] == self.path and fs['tags'] == tags:
+            return
+        fs['path'] = self.path
+        fs['tags'] = tags
+        fs['modified'] = -1
 
 
 def fix_cs(snapshots, cs):
     for fs in cs:
-        my_tags = MyTags(snapshots)
-        my_tags.read(fs['tags'])
+        my_tags = MyTags(snapshots, fs)
         my_tags.fix()
-        tags = my_tags.write()
-
-        if fs['tags'] != tags:
-            fs['tags'] = tags
-            fs['modified'] = -1
+        my_tags.write(fs)
 
 
 if __name__ == '__main__':
