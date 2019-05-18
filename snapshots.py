@@ -78,28 +78,41 @@ class Snapshots:
     def deserialize_attr(self, attr_snapshot):
         return eval(attr_snapshot)
 
+    def _make_frame_snapshot(self, name, has_attr, get_attr, get_pic):
+        kw = []
+        cls = eval('mutagen.id3.' + name)
+        for spec in [cls._framespec, cls._optionalspec]:
+            for attr_type in spec:
+                attr_name = attr_type.name
+                if name == 'APIC' and attr_name == 'mime':
+                    continue
+                elif name == 'APIC' and attr_name == 'data':
+                    path, mime = get_pic()
+                    kw.append('path=%r' % path)
+                    if mime != get_mime_by_path(path):
+                        kw.append('mime=%r' % mime)
+                elif has_attr(attr_name):
+                    attr = get_attr(attr_name)
+                    if attr == attr_type.default:
+                        continue
+                    attr_snapshot = self.serialize_attr(attr)
+                    kw.append('%s=%s' % (attr_name, attr_snapshot))
+            return '%s(%s)' % (name, ', '.join(kw))
+
     @serialize_check
     def serialize_frame(self, frame):
-        kw = []
-        for spec in [frame._framespec, frame._optionalspec]:
-            for attr_type in spec:
-                if hasattr(frame, attr_type.name):
-                    if type(frame) == mutagen.id3.APIC and attr_type.name == 'mime':
-                        continue
-                    if type(frame) == mutagen.id3.APIC and attr_type.name == 'data':
-                        data = frame.data
-                        mime = frame.mime
-                        path = self.serialize_picture(data, mime)
-                        kw.append('path=%r' % path)
-                        if mime != get_mime_by_path(path):
-                            kw.append('mime=%r' % mime)
-                    else:
-                        attr = getattr(frame, attr_type.name)
-                        if attr == attr_type.default:
-                            continue
-                        attr_snapshot = self.serialize_attr(attr)
-                        kw.append('%s=%s' % (attr_type.name, attr_snapshot))
-            return '%s(%s)' % (type(frame).__name__, ', '.join(kw))
+        def get_pic():
+            data = frame.data
+            mime = frame.mime
+            path = self.serialize_picture(data, mime)
+            return path, mime
+
+        return self._make_frame_snapshot(
+            type(frame).__name__,
+            lambda attr: hasattr(frame, attr),
+            lambda attr: getattr(frame, attr),
+            get_pic
+        )
 
     def APIC(self, *args, **kwargs):
         if 'mime' not in kwargs and 'path' in kwargs:
@@ -117,9 +130,21 @@ class Snapshots:
         kwargs = eval('get_kwargs' + frame_snapshot[4:])
         return name, kwargs
 
-    def frame_by_args(self, name, kwargs):
-        prefix = 'self.' if name == 'APIC' else 'mutagen.id3.'
-        return eval(prefix + name)(**kwargs)
+    def build_frame_snapshot(self, name, kwargs):
+        def get_pic():
+            path = kwargs['path']
+            if 'mime' in kwargs:
+                mime = kwargs['mime']
+            else:
+                mime = get_mime_by_path(path)
+            return path, mime
+
+        return self._make_frame_snapshot(
+            name,
+            lambda attr: attr in kwargs,
+            lambda attr: kwargs[attr],
+            get_pic
+        )
 
     @serialize_check
     def serialize_tags(self, tags):
