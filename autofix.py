@@ -2,6 +2,12 @@ from config import snapshot_root, music_root
 from collection import Snapshots, Collection
 
 from typing import Union, List
+import re
+
+
+roman_number_pattern = re.compile(
+    r'\b(?i:(?=[MDCLXVI])((M{0,3})((C[DM])|(D?C{0,3}))?((X[LC])|(L?X{0,3})|L)?((I[VX])|(V?(I{0,3}))|V)?))\b'
+)
 
 
 class FieldProto:
@@ -145,8 +151,51 @@ class MyTags:
 
         self.config.read(self, fs['tags'])
 
+    @staticmethod
+    def extract_number(s):
+        return (re.findall(r'\d+', s) or [''])[0]
+
+    @staticmethod
+    def align(digits, number, default_digits):
+        digits = MyTags.extract_number(digits)
+        number = MyTags.extract_number(number)
+        number = number and '0' * (int(digits or default_digits) - len(number)) + number
+        return digits, number
+
+    @staticmethod
+    def capitalize(s):
+        if isinstance(s, list):
+            return list(map(MyTags.capitalize, s))
+        s = re.sub(r'^\s+|\s+$', r'', s)  # trim
+        s = re.sub(r'\s+', r' ', s)  # remove extra spaces
+        s = s.lower()
+        s = re.sub(r'(^|(?<=[^\w\'])|(?<=\W\'))\w', lambda match: match.group(0).upper(), s)  # mixed case
+        s = re.sub(r'(?<=\bO\')\w', lambda match: match.group(0).upper(), s)  # for cases like O'Bannon
+        s = re.sub(roman_number_pattern, lambda match: match.group(0).upper(), s)  # fix roman numbers
+        s = re.sub(r'\'M\b', r"'m", s)
+        s = re.sub(r'\bMIX\b', r'Mix', s)
+        s = re.sub(r'\bOst\b', r'OST', s)
+        s = re.sub(r'\Dj\b', r'DJ', s)
+        return s
+
     def fix(self):
-        pass
+        self.track_digits, self.track = self.align(self.track_digits, self.track, 2)
+        self.year_order_digits, self.year_order = self.align(self.year_order_digits, self.year_order, 1)
+
+        self.series = self.capitalize(self.series)
+        self.albumartist = self.capitalize(self.albumartist)
+        self.album = self.capitalize(self.album)
+        self.artist = self.capitalize(self.artist)
+        self.album_translation = self.capitalize(self.album_translation)
+        self.title = self.capitalize(self.title)
+        self.title_translation = self.capitalize(self.title_translation)
+
+        self.series = self.series_exception or self.series
+        self.albumartist = self.albumartist_exception or self.albumartist
+        self.album = self.album_exception or self.album
+        self.artist = self.artist_exception or self.artist
+        self.title = self.title_exception or self.title
+
 
     def write(self, fs):
         tags = self.config.write(self)
