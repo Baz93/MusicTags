@@ -1,2 +1,2 @@
-music_root = '/mnt/c/Users/Vasiliy Mokin/Music/'
-snapshot_root = '/mnt/c/Programming/MusicTagsSnapshot'
+music_root = '/home/vmokin/Music/'
+snapshot_root = '/home/vmokin/Programming/MusicTagsSnapshot'
