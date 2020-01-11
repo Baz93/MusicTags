@@ -175,7 +175,7 @@ class MyTags:
         s = re.sub(r'\'M\b', r"'m", s)
         s = re.sub(r'\bMIX\b', r'Mix', s)
         s = re.sub(r'\bOst\b', r'OST', s)
-        s = re.sub(r'\Dj\b', r'DJ', s)
+        s = re.sub(r'\bDj\b', r'DJ', s)
         return s
 
     def fix(self):
