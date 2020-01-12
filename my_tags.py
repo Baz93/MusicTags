@@ -1,4 +1,5 @@
 import re
+import regex
 import functools
 
 from my_fields import *
@@ -47,9 +48,13 @@ class MyTags(MyTagsBase):
 
     @staticmethod
     @recursive_apply
+    def fix_dashes(s):
+        return regex.sub(r'(^|\s)\p{Pd}+(\s|$)', r'\1–\2', s)
+
+    @staticmethod
+    @recursive_apply
     def fix_pre(s):
-        s = re.sub(r'\[Pre-', '[pre-', s)
-        return s
+        return re.sub(r'\[Pre-', '[pre-', s)
 
     def fix(self):
         for digits, number, default in [
@@ -60,6 +65,7 @@ class MyTags(MyTagsBase):
 
         for key in [SERIES, ALBUMARTIST, ALBUM, ALBUMTRANSLATION, ARTIST, ARTISTTRANSLATION, TITLE, TITLETRANSLATION]:
             self[key] = self.capitalize(self[key])
+            self[key] = self.fix_dashes(self[key])
 
         self[ALBUMARTIST] = self.fix_pre(self[ALBUMARTIST])
 
