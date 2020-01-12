@@ -76,4 +76,6 @@ class MyTags(MyTagsBase):
             (ARTIST, ARTISTEXCEPTION),
             (TITLE, TITLEEXCEPTION),
         ]:
+            if self[exception_key] == self[key]:
+                del self[exception_key]
             self[key] = self[exception_key] or self[key]
