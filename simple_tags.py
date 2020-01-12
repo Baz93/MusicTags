@@ -20,8 +20,8 @@ def filter_proto(field_dict):
 def simple_tags(field_dict):
     by_tag: Dict[Any, FieldProto] = {}
 
-    for attr, proto in field_dict.items():
-        proto.set_name(attr)
+    for name, proto in field_dict.items():
+        proto.set_name(name)
         by_tag[(proto.frame, proto.desc)] = proto
 
     class SimpleTags:
@@ -40,15 +40,19 @@ def simple_tags(field_dict):
                     raise TypeError()
             self.data[(item.frame, item.desc)] = value
 
+        def __delitem__(self, item: FieldProto):
+            self[item] = [] if item.multifield else ''
+
         def __init__(self, snapshots, fs):
             self.snapshots = snapshots
+            self.data = {}
 
-            self.data = {('PATH', None): fs['path']}
+            self[FieldProto('PATH')] = fs['path']
 
-            for key, proto in by_tag.items():
+            for proto in by_tag.values():
                 if proto.frame == 'PATH':
                     continue
-                self.data[key] = [] if proto.multifield else ''
+                del self[proto]
 
             for tag in fs['tags']:
                 name, kwargs = self.snapshots.parse_frame_snapshot(tag)
@@ -74,14 +78,14 @@ def simple_tags(field_dict):
                     if not proto.multifield:
                         value = value[0]
 
-                self.data[key] = value
+                self[proto] = value
 
         def write(self, fs):
-            path = self.data[('PATH', None)]
+            path = self[FieldProto('PATH')]
 
             tags = []
-            for key, proto in by_tag.items():
-                value = self.data[key]
+            for proto in by_tag.values():
+                value = self[proto]
 
                 if not value:
                     continue
