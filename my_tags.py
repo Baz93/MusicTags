@@ -25,11 +25,11 @@ class MyTags(MyTagsBase):
         return (re.findall(r'\d+', s) or [''])[0]
 
     @staticmethod
-    def align(digits, number, default_digits):
+    def align(number, digits, default_digits):
         digits = MyTags.extract_number(digits)
         number = MyTags.extract_number(number)
         number = number and '0' * (int(digits or default_digits) - len(number)) + number
-        return digits, number
+        return number, digits
 
     @staticmethod
     @recursive_apply
@@ -57,11 +57,11 @@ class MyTags(MyTagsBase):
         return re.sub(r'\[Pre-', '[pre-', s)
 
     def fix(self):
-        for digits, number, default in [
-            (TRACKDIGITS, TRACK, 2),
-            (YEARORDERDIGITS, YEARORDER, 1),
+        for number, digits, default in [
+            (TRACK, TRACKDIGITS, 2),
+            (YEARORDER, YEARORDERDIGITS, 1),
         ]:
-            self[digits], self[number] = self.align(self[digits], self[number], default)
+            self[number], self[digits] = self.align(self[number], self[digits], default)
 
         for key in [SERIES, ALBUMARTIST, ALBUM, ALBUMTRANSLATION, ARTIST, ARTISTTRANSLATION, TITLE, TITLETRANSLATION]:
             self[key] = self.capitalize(self[key])
