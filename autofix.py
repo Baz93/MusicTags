@@ -3,6 +3,16 @@ from collection import Snapshots, Collection
 
 from typing import Union, List
 import re
+import functools
+
+
+def recursive_apply(f):
+    @functools.wraps(f)
+    def g(s, *args, **kwargs):
+        if isinstance(s, list):
+            return [g(x, *args, **kwargs) for x in s]
+        return f(s, *args, **kwargs)
+    return g
 
 
 roman_number_pattern = re.compile(
@@ -163,9 +173,8 @@ class MyTags:
         return digits, number
 
     @staticmethod
+    @recursive_apply
     def capitalize(s):
-        if isinstance(s, list):
-            return list(map(MyTags.capitalize, s))
         s = re.sub(r'^\s+|\s+$', r'', s)  # trim
         s = re.sub(r'\s+', r' ', s)  # remove extra spaces
         s = s.lower()
@@ -178,12 +187,18 @@ class MyTags:
         s = re.sub(r'\bDj\b', r'DJ', s)
         return s
 
+    @staticmethod
+    @recursive_apply
+    def fix_pre(s):
+        s = re.sub(r'\[Pre-', '[pre-', s)
+        return s
+
     def fix(self):
         self.track_digits, self.track = self.align(self.track_digits, self.track, 2)
         self.year_order_digits, self.year_order = self.align(self.year_order_digits, self.year_order, 1)
 
         self.series = self.capitalize(self.series)
-        self.albumartist = self.capitalize(self.albumartist)
+        self.albumartist = self.fix_pre(self.capitalize(self.albumartist))
         self.album = self.capitalize(self.album)
         self.artist = self.capitalize(self.artist)
         self.album_translation = self.capitalize(self.album_translation)
