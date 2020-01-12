@@ -1,1 +1,9 @@
-* text=auto eol=lf
+* text=auto
+
+*.txt text
+*.py text
+*.json text
+
+*.jpg binary
+*.png binary
+*.mp3 binary
