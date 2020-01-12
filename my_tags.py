@@ -1,6 +1,7 @@
 import re
 import regex
 import functools
+from unidecode import unidecode
 
 from my_fields import *
 
@@ -56,6 +57,53 @@ class MyTags(MyTagsBase):
     def fix_pre(s):
         return re.sub(r'\[Pre-', '[pre-', s)
 
+    @staticmethod
+    @recursive_apply
+    def remove_extentions(s):
+        s = re.sub(r" \[.*\]$", '', s)
+        s = re.sub(r" \{.*\}$", '', s)
+        return s
+
+    @staticmethod
+    def rym_escape_character(s):
+        s = s.lower()
+
+        d = {
+            '–': '_',
+            '[': '[',
+            ']': ']',
+        }
+        if s in d:
+            return d[s]
+
+        if not regex.fullmatch(r'\p{IsLatin}|\p{ASCII}', s):
+            return s
+
+        d = {
+            'þ': 'd',
+        }
+        if s in d:
+            return d[s]
+
+        s = unidecode(s)
+        d = {
+            ' ': '_',
+            '&': 'and',
+            '"': '',
+            "'": '',
+        }
+        if s in d:
+            return d[s]
+
+        if re.fullmatch(r'\W', s):
+            return '_'
+        return s
+
+    @staticmethod
+    @recursive_apply
+    def rym_escape(s):
+        return ''.join(map(MyTags.rym_escape_character, s))
+
     def fix(self):
         for number, digits, default in [
             (TRACK, TRACKDIGITS, 2),
@@ -69,12 +117,29 @@ class MyTags(MyTagsBase):
 
         self[ALBUMARTIST] = self.fix_pre(self[ALBUMARTIST])
 
+        self[RYMARTIST] = self.rym_escape(self.remove_extentions(' and '.join(self[ALBUMARTIST])))
+        self[RYMALBUM] = self.rym_escape(self[ALBUM])
+
+        for pattern, rym_type in [
+            (r'\b(EP|Demo)\b', 'ep'),
+            (r'\bSingle\b', 'single'),
+            (r'\bCompilation\b', 'comp'),
+        ]:
+            if re.search(pattern, self[ALBUMAPPENDIX]):
+                self[RYMTYPE] = rym_type
+                break
+        else:
+            self[RYMTYPE] = 'album'
+
         for key, exception_key in [
             (SERIES, SERIESEXCEPTION),
             (ALBUMARTIST, ALBUMARTISTEXCEPTION),
             (ALBUM, ALBUMEXCEPTION),
             (ARTIST, ARTISTEXCEPTION),
             (TITLE, TITLEEXCEPTION),
+            (RYMALBUM, RYMALBUMEXCEPTION),
+            (RYMARTIST, RYMARTISTEXCEPTION),
+            (RYMTYPE, RYMTYPEEXCEPTION),
         ]:
             if self[exception_key] == self[key]:
                 del self[exception_key]
