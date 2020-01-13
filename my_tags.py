@@ -2,6 +2,7 @@ import re
 import regex
 import functools
 from unidecode import unidecode
+from itertools import zip_longest
 
 from my_fields import *
 
@@ -104,6 +105,19 @@ class MyTags(MyTagsBase):
     def rym_escape(s):
         return ''.join(map(MyTags.rym_escape_character, s))
 
+    @staticmethod
+    @recursive_apply
+    def compile_extended(values):
+        s, s_translation, s_appendix = values
+        l = []
+        if s:
+            l.append(s)
+        if s_translation:
+            l.append(f'{{{s_translation}}}')
+        if s_appendix:
+            l.append(f'[{s_appendix}]')
+        return ' '.join(l)
+
     def fix(self):
         for number, digits, default in [
             (TRACK, TRACKDIGITS, 2),
@@ -144,3 +158,13 @@ class MyTags(MyTagsBase):
             if self[exception_key] == self[key]:
                 del self[exception_key]
             self[key] = self[exception_key] or self[key]
+
+        for extended_key, key, key_translation, key_appendix in [
+            (EXTENDEDALBUM, ALBUM, ALBUMTRANSLATION, ALBUMAPPENDIX),
+            (EXTENDEDARTIST, ARTIST, ARTISTTRANSLATION, ARTISTAPPENDIX),
+            (EXTENDEDTITLE, TITLE, TITLETRANSLATION, TITLEAPPENDIX),
+        ]:
+            values = (self[key], self[key_translation], self[key_appendix])
+            if key.multifield:
+                values = list(zip_longest(*values))
+            self[extended_key] = self.compile_extended(values)
