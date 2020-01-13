@@ -6,7 +6,7 @@ from itertools import zip_longest
 
 from config import snapshot_root, music_root
 from collection import Snapshots, Collection
-from my_fields import *
+from my_tags import *
 
 
 def recursive_apply(f):
@@ -173,7 +173,7 @@ def fix(tags):
 
 def fix_cs(snapshots, cs):
     for fs in cs:
-        my_tags = MyTagsBase(snapshots, fs)
+        my_tags = MyTags(snapshots, fs)
         fix(my_tags)
         my_tags.write(fs)
 

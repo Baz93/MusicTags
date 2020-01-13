@@ -58,4 +58,4 @@ PICTURE = FieldProto('APIC')
 LYRICS = FieldProto('USLT')
 
 
-MyTagsBase = simple_tags(filter_proto(locals()))
+MyTags = simple_tags(filter_proto(locals()))
