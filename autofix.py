@@ -1,3 +1,4 @@
+import os
 import re
 import regex
 import functools
@@ -118,6 +119,48 @@ def compile_extended(values):
         l.append(f'[{s_appendix}]')
     return ' '.join(l)
 
+
+def compress(s):
+    if len(s) > 30:
+        s = s[:20] + '...' + s[-10:]
+    return s
+
+
+def set_path(tags):
+    extension = tags[PATH].split('.')[-1]
+
+    combined_albumartist = '; '.join(tags[ALBUMARTIST])
+    combined_artist = '; '.join(tags[EXTENDEDARTIST])
+    filename = f'{tags[TRACK]}. ' if tags[TRACK] else ''
+    if combined_artist != (combined_albumartist if tags[TRACK] else tags[SERIES]):
+        filename += f'{compress(combined_artist)} – '
+    filename += compress(tags[EXTENDEDTITLE])
+
+    if tags[TRACK]:
+        dirname = tags[YEAR]
+        if tags[YEARORDER]:
+            dirname += f'({tags[YEARORDER]})'
+        dirname += ' – '
+        if combined_albumartist != tags[SERIES]:
+            dirname += f'{compress(combined_albumartist)} – '
+        dirname += compress(tags[EXTENDEDALBUM])
+    else:
+        dirname = f'0000 – {filename}'
+
+    tokens = [
+        tags[GROUP],
+        tags[COUNTRY],
+        compress(tags[SERIES]),
+        dirname,
+        '.'.join([filename, extension]),
+    ]
+    if tags[PATH].startswith('__Unsorted' + os.sep):
+        tokens.insert(0, '__Unsorted')
+    tokens = [re.sub(r'[/\\?*"<>|:]', '-', token) for token in tokens]
+    path = os.path.join(*tokens)
+    tags[PATH] = path
+
+
 def fix(tags):
     for number, digits, default in [
         (TRACK, TRACKDIGITS, 2),
@@ -169,6 +212,7 @@ def fix(tags):
             values = list(zip_longest(*values))
         tags[extended_key] = compile_extended(values)
 
+    set_path(tags)
 
 
 def fix_cs(snapshots, cs):
@@ -186,8 +230,9 @@ if __name__ == '__main__':
         cs = None
     collection = Collection(snapshots, music_root, expected_cs=cs)
     cs = collection.state
+    cs = sorted(cs, key=lambda fs: fs['path'])
 
     fix_cs(snapshots, cs)
     
-    snapshots.save(cs, 'data.json')
+    snapshots.save(cs, 'data.json', sort=False)
     collection.remove_unused_pictures()

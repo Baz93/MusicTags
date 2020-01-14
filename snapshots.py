@@ -166,10 +166,12 @@ class Snapshots:
             result.add(self.deserialize_frame(frame_snapshot))
         return result
 
-    def save(self, snapshot, name):
+    def save(self, snapshot, name, sort=True):
         path = os.path.join(self.snapshot_root, name)
+        if sort:
+            snapshot = sorted(snapshot, key=lambda fs: fs['path'])
         with open(path, 'w') as f:
-            json.dump(sorted(snapshot, key=lambda fs: fs['path']), f, indent=4, ensure_ascii=False)
+            json.dump(snapshot, f, indent=4, ensure_ascii=False)
 
     def load(self, name):
         path = os.path.join(self.snapshot_root, name)
