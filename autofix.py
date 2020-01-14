@@ -10,6 +10,9 @@ from collection import Snapshots, Collection
 from my_tags import *
 
 
+unsorted_folder = '__Unsorted'
+
+
 def recursive_apply(f):
     @functools.wraps(f)
     def g(s, *args, **kwargs):
@@ -24,15 +27,17 @@ roman_number_pattern = re.compile(
 )
 
 
-def extract_number(s):
-    return (re.findall(r'\d+', s) or [''])[0]
+def extract_number(tags, key):
+    number = (re.findall(r'\d+', tags[key]) or [''])[0]
+    tags[key] = number
+    return number
 
 
-def align(number, digits, default_digits):
-    digits = extract_number(digits)
-    number = extract_number(number)
-    number = number and '0' * (int(digits or default_digits) - len(number)) + number
-    return number, digits
+def align(tags, number_key, digits_key, default_digits):
+    digits = extract_number(tags, digits_key) or default_digits
+    number = extract_number(tags, number_key)
+    if number:
+        tags[number_key] = '0' * (int(digits) - len(number)) + number
 
 
 @recursive_apply
@@ -58,6 +63,12 @@ def fix_dashes(s):
 @recursive_apply
 def fix_pre(s):
     return re.sub(r'\[Pre-', '[pre-', s)
+
+
+def fix_exception(tags, key, exception_key):
+    if tags[exception_key] == tags[key]:
+        del tags[exception_key]
+    tags[key] = tags[exception_key] or tags[key]
 
 
 @recursive_apply
@@ -120,10 +131,33 @@ def compile_extended(values):
     return ' '.join(l)
 
 
+def extract_group(path):
+    tokens = path.split(os.sep)
+    if tokens[0] == unsorted_folder:
+        return tokens[1]
+    return tokens[0]
+
+
 def compress(s):
     if len(s) > 30:
         s = s[:20] + '...' + s[-10:]
     return s
+
+
+def set_rym_values(tags):
+    tags[RYMARTIST] = rym_escape(remove_extentions(' and '.join(tags[ALBUMARTIST])))
+    tags[RYMALBUM] = rym_escape(tags[ALBUM])
+
+    for pattern, rym_type in [
+        (r'\b(EP|Demo)\b', 'ep'),
+        (r'\bSingle\b', 'single'),
+        (r'\bCompilation\b', 'comp'),
+    ]:
+        if re.search(pattern, tags[ALBUMAPPENDIX]):
+            tags[RYMTYPE] = rym_type
+            break
+    else:
+        tags[RYMTYPE] = 'album'
 
 
 def set_path(tags):
@@ -154,19 +188,16 @@ def set_path(tags):
         dirname,
         '.'.join([filename, extension]),
     ]
-    if tags[PATH].startswith('__Unsorted' + os.sep):
-        tokens.insert(0, '__Unsorted')
+    if tags[PATH].startswith(unsorted_folder + os.sep):
+        tokens.insert(0, unsorted_folder)
     tokens = [re.sub(r'[/\\?*"<>|:]', '-', token) for token in tokens]
     path = os.path.join(*tokens)
     tags[PATH] = path
 
 
 def fix(tags):
-    for number, digits, default in [
-        (TRACK, TRACKDIGITS, 2),
-        (YEARORDER, YEARORDERDIGITS, 1),
-    ]:
-        tags[number], tags[digits] = align(tags[number], tags[digits], default)
+    align(tags, TRACK, TRACKDIGITS, 2)
+    align(tags, YEARORDER, YEARORDERDIGITS, 1)
 
     for key in [SERIES, ALBUMARTIST, ALBUM, ALBUMTRANSLATION, ARTIST, ARTISTTRANSLATION, TITLE, TITLETRANSLATION]:
         tags[key] = capitalize(tags[key])
@@ -174,33 +205,11 @@ def fix(tags):
 
     tags[ALBUMARTIST] = fix_pre(tags[ALBUMARTIST])
 
-    tags[RYMARTIST] = rym_escape(remove_extentions(' and '.join(tags[ALBUMARTIST])))
-    tags[RYMALBUM] = rym_escape(tags[ALBUM])
-
-    for pattern, rym_type in [
-        (r'\b(EP|Demo)\b', 'ep'),
-        (r'\bSingle\b', 'single'),
-        (r'\bCompilation\b', 'comp'),
-    ]:
-        if re.search(pattern, tags[ALBUMAPPENDIX]):
-            tags[RYMTYPE] = rym_type
-            break
-    else:
-        tags[RYMTYPE] = 'album'
-
-    for key, exception_key in [
-        (SERIES, SERIESEXCEPTION),
-        (ALBUMARTIST, ALBUMARTISTEXCEPTION),
-        (ALBUM, ALBUMEXCEPTION),
-        (ARTIST, ARTISTEXCEPTION),
-        (TITLE, TITLEEXCEPTION),
-        (RYMALBUM, RYMALBUMEXCEPTION),
-        (RYMARTIST, RYMARTISTEXCEPTION),
-        (RYMTYPE, RYMTYPEEXCEPTION),
-    ]:
-        if tags[exception_key] == tags[key]:
-            del tags[exception_key]
-        tags[key] = tags[exception_key] or tags[key]
+    fix_exception(tags, SERIES, SERIESEXCEPTION)
+    fix_exception(tags, ALBUMARTIST, ALBUMARTISTEXCEPTION)
+    fix_exception(tags, ALBUM, ALBUMEXCEPTION)
+    fix_exception(tags, ARTIST, ARTISTEXCEPTION)
+    fix_exception(tags, TITLE, TITLEEXCEPTION)
 
     for extended_key, key, key_translation, key_appendix in [
         (EXTENDEDALBUM, ALBUM, ALBUMTRANSLATION, ALBUMAPPENDIX),
@@ -212,11 +221,24 @@ def fix(tags):
             values = list(zip_longest(*values))
         tags[extended_key] = compile_extended(values)
 
+    tags[ALBUMARTIST] = tags[ALBUMARTIST] or tags[EXTENDEDARTIST]
+    tags[SERIES] = tags[SERIES] or (tags[ALBUMARTIST][0] if len(tags[ALBUMARTIST]) == 1 else "Various Artists")
+    tags[COUNTRY] = tags[COUNTRY] or 'Unknown'
+    tags[GROUP] = tags[GROUP] or extract_group(tags[PATH])
+
+    set_rym_values(tags)
+
+    fix_exception(tags, RYMALBUM, RYMALBUMEXCEPTION)
+    fix_exception(tags, RYMARTIST, RYMARTISTEXCEPTION)
+    fix_exception(tags, RYMTYPE, RYMTYPEEXCEPTION)
+
     set_path(tags)
 
 
 def fix_cs(snapshots, cs):
     for fs in cs:
+        if fs['path'].startswith(unsorted_folder + os.sep):
+            continue
         my_tags = MyTags(snapshots, fs)
         fix(my_tags)
         my_tags.write(fs)
