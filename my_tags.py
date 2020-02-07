@@ -1,61 +1,65 @@
-from simple_tags import FieldProto, filter_proto, simple_tags
+from simple_tags import SimpleTags
 
 
-assert filter_proto(locals()) == {}
+class MyTags(SimpleTags):
+    pass
 
 
-PATH = FieldProto('PATH')
-
-TITLE = FieldProto('TIT2')
-TITLEEXCEPTION = FieldProto('TXXX')
-TITLETRANSLATION = FieldProto('TXXX')
-TITLEAPPENDIX = FieldProto('TXXX')
-EXTENDEDTITLE = FieldProto('TXXX')
-
-ARTIST = FieldProto('TPE1', multifield=True)
-ARTISTEXCEPTION = FieldProto('TXXX', multifield=True)
-ARTISTTRANSLATION = FieldProto('TXXX', multifield=True)
-ARTISTAPPENDIX = FieldProto('TXXX', multifield=True)
-EXTENDEDARTIST = FieldProto('TXXX', multifield=True)
-
-TRACK = FieldProto('TRCK')
-TRACKDIGITS = FieldProto('TXXX')
-
-ALBUM = FieldProto('TALB')
-ALBUMEXCEPTION = FieldProto('TXXX')
-ALBUMTRANSLATION = FieldProto('TXXX')
-ALBUMAPPENDIX = FieldProto('TXXX')
-EXTENDEDALBUM = FieldProto('TXXX')
-
-YEAR = FieldProto('TDRC')
-YEARORDER = FieldProto('TXXX')
-YEARORDERDIGITS = FieldProto('TXXX')
-
-ALBUMARTIST = FieldProto('TPE2', multifield=True)
-ALBUMARTISTEXCEPTION = FieldProto('TXXX', multifield=True)
-SERIES = FieldProto('TXXX')
-SERIESEXCEPTION = FieldProto('TXXX')
-COUNTRY = FieldProto('TXXX')
-GROUP = FieldProto('TXXX')
-
-GENRE = FieldProto('TCON')
-SUPERGENRE = FieldProto('TXXX')
-SUBGENRE = FieldProto('TXXX')
-GENRESPECIFIER = FieldProto('TXXX')
-SECONDARYGENRES = FieldProto('TXXX', multifield=True)
-
-COMPOSER = FieldProto('TCOM', multifield=True)
-PERFORMER = FieldProto('TXXX', multifield=True)
-
-RYMARTIST = FieldProto('TXXX')
-RYMARTISTEXCEPTION = FieldProto('TXXX')
-RYMALBUM = FieldProto('TXXX')
-RYMALBUMEXCEPTION = FieldProto('TXXX')
-RYMTYPE = FieldProto('TXXX')
-RYMTYPEEXCEPTION = FieldProto('TXXX')
-
-PICTURE = FieldProto('APIC')
-LYRICS = FieldProto('USLT')
+MyTags.clear_storage()
 
 
-MyTags = simple_tags(filter_proto(locals()))
+PATH = MyTags.register_tag('PATH')
+
+TITLE = MyTags.register_tag('TIT2')
+TITLEEXCEPTION = MyTags.register_tag('TXXX')
+TITLETRANSLATION = MyTags.register_tag('TXXX')
+TITLEAPPENDIX = MyTags.register_tag('TXXX')
+EXTENDEDTITLE = MyTags.register_tag('TXXX')
+
+ARTIST = MyTags.register_tag('TPE1', multifield=True)
+ARTISTEXCEPTION = MyTags.register_tag('TXXX', multifield=True)
+ARTISTTRANSLATION = MyTags.register_tag('TXXX', multifield=True)
+ARTISTAPPENDIX = MyTags.register_tag('TXXX', multifield=True)
+EXTENDEDARTIST = MyTags.register_tag('TXXX', multifield=True)
+
+TRACK = MyTags.register_tag('TRCK')
+TRACKDIGITS = MyTags.register_tag('TXXX')
+
+ALBUM = MyTags.register_tag('TALB')
+ALBUMEXCEPTION = MyTags.register_tag('TXXX')
+ALBUMTRANSLATION = MyTags.register_tag('TXXX')
+ALBUMAPPENDIX = MyTags.register_tag('TXXX')
+EXTENDEDALBUM = MyTags.register_tag('TXXX')
+
+YEAR = MyTags.register_tag('TDRC')
+YEARORDER = MyTags.register_tag('TXXX')
+YEARORDERDIGITS = MyTags.register_tag('TXXX')
+
+ALBUMARTIST = MyTags.register_tag('TPE2', multifield=True)
+ALBUMARTISTEXCEPTION = MyTags.register_tag('TXXX', multifield=True)
+SERIES = MyTags.register_tag('TXXX')
+SERIESEXCEPTION = MyTags.register_tag('TXXX')
+COUNTRY = MyTags.register_tag('TXXX')
+GROUP = MyTags.register_tag('TXXX')
+
+GENRE = MyTags.register_tag('TCON')
+SUPERGENRE = MyTags.register_tag('TXXX')
+SUBGENRE = MyTags.register_tag('TXXX')
+GENRESPECIFIER = MyTags.register_tag('TXXX')
+SECONDARYGENRES = MyTags.register_tag('TXXX', multifield=True)
+
+COMPOSER = MyTags.register_tag('TCOM', multifield=True)
+PERFORMER = MyTags.register_tag('TXXX', multifield=True)
+
+RYMARTIST = MyTags.register_tag('TXXX')
+RYMARTISTEXCEPTION = MyTags.register_tag('TXXX')
+RYMALBUM = MyTags.register_tag('TXXX')
+RYMALBUMEXCEPTION = MyTags.register_tag('TXXX')
+RYMTYPE = MyTags.register_tag('TXXX')
+RYMTYPEEXCEPTION = MyTags.register_tag('TXXX')
+
+PICTURE = MyTags.register_tag('APIC')
+LYRICS = MyTags.register_tag('USLT')
+
+
+MyTags.finalize_storage(locals())
