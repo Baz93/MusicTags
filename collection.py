@@ -67,7 +67,7 @@ class Collection:
             else:
                 print('Bad extension:', real_path)
             return
-        for f in os.listdir(real_path):
+        for f in sorted(os.listdir(real_path)):
             self.music_search(os.path.join(path, f), res)
 
     def read_file(self, path):
