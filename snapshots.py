@@ -171,7 +171,7 @@ class Snapshots:
         path = posixpath.join(self.snapshot_root, name)
         if sort:
             snapshot = sorted(snapshot, key=lambda fs: fs['path'])
-        with open(path, 'w', encoding='utf8') as f:
+        with open(path, 'w', encoding='utf8', newline='\n') as f:
             json.dump(snapshot, f, indent=4, ensure_ascii=False)
 
     def load(self, name):
