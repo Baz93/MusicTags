@@ -170,12 +170,12 @@ class Snapshots:
         path = os.path.join(self.snapshot_root, name)
         if sort:
             snapshot = sorted(snapshot, key=lambda fs: fs['path'])
-        with open(path, 'w') as f:
+        with open(path, 'w', encoding='utf8') as f:
             json.dump(snapshot, f, indent=4, ensure_ascii=False)
 
     def load(self, name):
         path = os.path.join(self.snapshot_root, name)
-        with open(path, 'r') as f:
+        with open(path, 'r', encoding='utf8') as f:
             snapshot = json.load(f)
         return snapshot
 
