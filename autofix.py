@@ -1,4 +1,5 @@
 import os
+import posixpath
 import re
 import regex
 import functools
@@ -191,7 +192,7 @@ def set_path(tags):
     if tags[PATH].startswith(unsorted_folder + os.sep):
         tokens.insert(0, unsorted_folder)
     tokens = [re.sub(r'[/\\?*"<>|:]', '-', token) for token in tokens]
-    path = os.path.join(*tokens)
+    path = posixpath.join(*tokens)
     tags[PATH] = path
 
 

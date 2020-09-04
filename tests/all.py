@@ -1,5 +1,6 @@
 import unittest
 import os
+import posixpath
 import shutil
 import filecmp
 import json
@@ -8,9 +9,9 @@ import mutagen.id3
 from collection import Snapshots, Collection
 
 
-test_root = os.path.dirname(os.path.abspath(__file__))
-test_data_root = os.path.join(test_root, 'data')
-work_root = os.path.join(test_root, 'work')
+test_root = posixpath.dirname(posixpath.abspath(__file__))
+test_data_root = posixpath.join(test_root, 'data')
+work_root = posixpath.join(test_root, 'work')
 
 
 def create_collection(data_path, snapshot_root, music_root, name):
@@ -19,8 +20,8 @@ def create_collection(data_path, snapshot_root, music_root, name):
     os.makedirs(music_root, exist_ok=True)
     os.makedirs(snapshot_root, exist_ok=True)
     for fs in cs:
-        path = os.path.join(music_root, fs['path'])
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        path = posixpath.join(music_root, fs['path'])
+        os.makedirs(posixpath.dirname(path), exist_ok=True)
         with open(path, 'w') as f:
             f.write(fs['data'])
         mutagen.id3.ID3().save(path)
@@ -43,10 +44,10 @@ class AllTests(unittest.TestCase):
         files2 = sorted(os.listdir(path2))
         self.assertEqual(files1, files2)
         for f in files1:
-            f1 = os.path.join(path1, f)
-            f2 = os.path.join(path2, f)
-            is_dir1 = os.path.isdir(f1)
-            is_dir2 = os.path.isdir(f2)
+            f1 = posixpath.join(path1, f)
+            f2 = posixpath.join(path2, f)
+            is_dir1 = posixpath.isdir(f1)
+            is_dir2 = posixpath.isdir(f2)
             self.assertEqual(is_dir1, is_dir2)
             if is_dir1:
                 self.folders_equal(f1, f2)
@@ -64,52 +65,52 @@ class AllTests(unittest.TestCase):
             self.assertEqual(fs1['tags'], fs2['tags'])
 
     def impl_test_create(self, data_name, test_name):
-        work_dir = os.path.join(work_root, test_name)
-        if os.path.isdir(work_dir):
+        work_dir = posixpath.join(work_root, test_name)
+        if posixpath.isdir(work_dir):
             shutil.rmtree(work_dir)
         os.makedirs(work_dir)
-        test_data = os.path.join(test_data_root, data_name)
+        test_data = posixpath.join(test_data_root, data_name)
 
-        music_dir = os.path.join(work_dir, 'music')
-        result_dir = os.path.join(work_dir, 'result')
+        music_dir = posixpath.join(work_dir, 'music')
+        result_dir = posixpath.join(work_dir, 'result')
 
-        create_collection(os.path.join(test_data, 'image.json'), result_dir, music_dir, 'data.json')
+        create_collection(posixpath.join(test_data, 'image.json'), result_dir, music_dir, 'data.json')
 
-        self.folders_equal(music_dir, os.path.join(test_data, 'music'))
-        self.folders_equal(os.path.join(result_dir, 'pictures'), os.path.join(work_dir, 'result', 'pictures'))
-        self.snapshots_equal(os.path.join(result_dir, 'data.json'), os.path.join(work_dir, 'result', 'data.json'))
+        self.folders_equal(music_dir, posixpath.join(test_data, 'music'))
+        self.folders_equal(posixpath.join(result_dir, 'pictures'), posixpath.join(work_dir, 'result', 'pictures'))
+        self.snapshots_equal(posixpath.join(result_dir, 'data.json'), posixpath.join(work_dir, 'result', 'data.json'))
 
     def impl_test_scan(self, data_name, test_name):
-        work_dir = os.path.join(work_root, test_name)
-        if os.path.isdir(work_dir):
+        work_dir = posixpath.join(work_root, test_name)
+        if posixpath.isdir(work_dir):
             shutil.rmtree(work_dir)
         os.makedirs(work_dir)
-        test_data = os.path.join(test_data_root, data_name)
+        test_data = posixpath.join(test_data_root, data_name)
 
-        result_dir = os.path.join(work_dir, 'result')
+        result_dir = posixpath.join(work_dir, 'result')
 
         snapshots = Snapshots(result_dir)
-        collection = Collection(snapshots, os.path.join(test_data, 'music'))
+        collection = Collection(snapshots, posixpath.join(test_data, 'music'))
         cs = collection.state
         snapshots.save(cs, 'data.json')
 
-        self.folders_equal(os.path.join(result_dir, 'pictures'), os.path.join(work_dir, 'result', 'pictures'))
-        self.snapshots_equal(os.path.join(result_dir, 'data.json'), os.path.join(work_dir, 'result', 'data.json'))
+        self.folders_equal(posixpath.join(result_dir, 'pictures'), posixpath.join(work_dir, 'result', 'pictures'))
+        self.snapshots_equal(posixpath.join(result_dir, 'data.json'), posixpath.join(work_dir, 'result', 'data.json'))
 
     def impl_test_apply(self, data_name, test_name):
-        work_dir = os.path.join(work_root, test_name)
-        if os.path.isdir(work_dir):
+        work_dir = posixpath.join(work_root, test_name)
+        if posixpath.isdir(work_dir):
             shutil.rmtree(work_dir)
         os.makedirs(work_dir)
-        test_data = os.path.join(test_data_root, data_name)
+        test_data = posixpath.join(test_data_root, data_name)
 
-        music1_dir = os.path.join(work_dir, 'music1')
-        result1_dir = os.path.join(work_dir, 'result1')
-        music2_dir = os.path.join(work_dir, 'music2')
-        result2_dir = os.path.join(work_dir, 'result2')
+        music1_dir = posixpath.join(work_dir, 'music1')
+        result1_dir = posixpath.join(work_dir, 'result1')
+        music2_dir = posixpath.join(work_dir, 'music2')
+        result2_dir = posixpath.join(work_dir, 'result2')
 
-        create_collection(os.path.join(test_data, 'image1.json'), result1_dir, music1_dir, 'data.json')
-        create_collection(os.path.join(test_data, 'image2.json'), result2_dir, music2_dir, 'data.json')
+        create_collection(posixpath.join(test_data, 'image1.json'), result1_dir, music1_dir, 'data.json')
+        create_collection(posixpath.join(test_data, 'image2.json'), result2_dir, music2_dir, 'data.json')
 
         snapshots1 = Snapshots(result1_dir)
         collection1 = Collection(snapshots1, music1_dir)
@@ -121,8 +122,8 @@ class AllTests(unittest.TestCase):
         snapshots1.save(collection1.state, 'data.json')
 
         self.folders_equal(music1_dir, music2_dir)
-        self.folders_equal(os.path.join(result1_dir, 'pictures'), os.path.join(result2_dir, 'pictures'))
-        self.snapshots_equal(os.path.join(result1_dir, 'data.json'), os.path.join(result2_dir, 'data.json'))
+        self.folders_equal(posixpath.join(result1_dir, 'pictures'), posixpath.join(result2_dir, 'pictures'))
+        self.snapshots_equal(posixpath.join(result1_dir, 'data.json'), posixpath.join(result2_dir, 'data.json'))
 
     def test_create_one_big_file(self):
         self.impl_test_create('one_big_file', 'create_one_big_file')

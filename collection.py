@@ -1,4 +1,5 @@
 import os
+import posixpath
 from collections import OrderedDict
 import hashlib
 import tempfile
@@ -13,7 +14,7 @@ from snapshots import Snapshots
 
 def get_mp3_hash(path):
     with tempfile.TemporaryDirectory() as td:
-        tf = os.path.join(td, 'a.mp3')
+        tf = posixpath.join(td, 'a.mp3')
         shutil.copy2(path, tf)
         tags = ID3(tf)
         tags.delete()
@@ -23,7 +24,7 @@ def get_mp3_hash(path):
 
 
 def modified_timestamp(path):
-    return int(os.path.getmtime(path))
+    return int(posixpath.getmtime(path))
 
 
 class Collection:
@@ -44,7 +45,7 @@ class Collection:
         self.by_path = dict((fs['path'], fs) for fs in state)
 
     def real_path(self, path):
-        return os.path.join(self.music_root, path)
+        return posixpath.join(self.music_root, path)
 
     def is_good_path(self, path):
         # TODO
@@ -52,23 +53,23 @@ class Collection:
 
     def delete_empty_folders(self, path):
         real_path = self.real_path(path)
-        if os.path.isfile(real_path):
+        if posixpath.isfile(real_path):
             return
         for f in os.listdir(real_path):
-            self.delete_empty_folders(os.path.join(path, f))
+            self.delete_empty_folders(posixpath.join(path, f))
         if len(os.listdir(real_path)) == 0:
             os.rmdir(real_path)
 
     def music_search(self, path, res):
         real_path = self.real_path(path)
-        if os.path.isfile(real_path):
+        if posixpath.isfile(real_path):
             if real_path.endswith('.mp3'):
                 res.append(path)
             else:
                 print('Bad extension:', real_path)
             return
         for f in sorted(os.listdir(real_path)):
-            self.music_search(os.path.join(path, f), res)
+            self.music_search(posixpath.join(path, f), res)
 
     def read_file(self, path):
         real_path = self.real_path(path)
@@ -101,7 +102,7 @@ class Collection:
         cur_real_path = self.real_path(cur_path)
         new_real_path = self.real_path(new_path)
         assert new_path not in self.by_path
-        os.makedirs(os.path.dirname(new_real_path), exist_ok=True)
+        os.makedirs(posixpath.dirname(new_real_path), exist_ok=True)
         fs = self.by_path[cur_path]
         shutil.move(cur_real_path, new_real_path)
         del self.by_path[cur_path]

@@ -2,6 +2,7 @@ import os
 import json
 import hashlib
 import mimetypes
+import posixpath
 from functools import wraps
 
 from mutagen.id3 import ID3, PictureType, Encoding, ID3TimeStamp
@@ -47,7 +48,7 @@ def serialize_check(serialize):
 class Snapshots:
     def __init__(self, snapshot_root):
         self.snapshot_root = snapshot_root
-        self.picture_dir = os.path.join(snapshot_root, 'pictures/')
+        self.picture_dir = posixpath.join(snapshot_root, 'pictures/')
         os.makedirs(self.picture_dir, exist_ok=True)
 
     def equal(self, lhs, rhs):
@@ -58,14 +59,14 @@ class Snapshots:
     def serialize_picture(self, data, mime):
         name = hashlib.md5(data).hexdigest()
         name += get_extension_by_mime(mime)
-        path = os.path.join(self.picture_dir, name)
-        if not os.path.exists(path):
+        path = posixpath.join(self.picture_dir, name)
+        if not posixpath.exists(path):
             with open(path, 'wb') as f:
                 f.write(data)
         return name
 
     def deserialize_picture(self, path):
-        path = os.path.join(self.picture_dir, path)
+        path = posixpath.join(self.picture_dir, path)
         with open(path, 'rb') as f:
             data = f.read()
         return data
@@ -167,14 +168,14 @@ class Snapshots:
         return result
 
     def save(self, snapshot, name, sort=True):
-        path = os.path.join(self.snapshot_root, name)
+        path = posixpath.join(self.snapshot_root, name)
         if sort:
             snapshot = sorted(snapshot, key=lambda fs: fs['path'])
         with open(path, 'w', encoding='utf8') as f:
             json.dump(snapshot, f, indent=4, ensure_ascii=False)
 
     def load(self, name):
-        path = os.path.join(self.snapshot_root, name)
+        path = posixpath.join(self.snapshot_root, name)
         with open(path, 'r', encoding='utf8') as f:
             snapshot = json.load(f)
         return snapshot
@@ -182,4 +183,4 @@ class Snapshots:
     def filter_pictures(self, rool):
         for filename in os.listdir(self.picture_dir):
             if not rool(filename):
-                os.remove(os.path.join(self.picture_dir, filename))
+                os.remove(posixpath.join(self.picture_dir, filename))
